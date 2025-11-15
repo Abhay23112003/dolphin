@@ -67,8 +67,17 @@ export default function Home() {
     const pusher = new Pusher(key, { cluster });
 
     const channel = pusher.subscribe("workspace-channel");
+    
+    // Handle normal messages
     channel.bind("new-message", (msg) => {
       setMessages((prev) => [...prev, msg]);
+    });
+
+    // Handle large messages - refresh from API to get full content
+    channel.bind("large-message-posted", async () => {
+      const res = await fetch("/api/messages");
+      const data = await res.json();
+      setMessages(data || []);
     });
 
     return () => {
@@ -248,7 +257,15 @@ export default function Home() {
                 Send
               </button>
             </div>
-            <p className="text-slate-500 text-xs mt-2">Press Ctrl+Enter or Cmd+Enter to send</p>
+            <div className="flex items-center justify-between">
+              <p className="text-slate-500 text-xs mt-2">
+                Press Ctrl+Enter or Cmd+Enter to send
+              </p>
+              <p className="text-slate-500 text-xs mt-2">
+                {text.length.toLocaleString()} characters
+                {text.length > 5000 && <span className="text-yellow-400 ml-2">⚡ Large message</span>}
+              </p>
+            </div>
           </div>
         </div>
       </div>

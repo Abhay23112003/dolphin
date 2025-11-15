@@ -13,23 +13,37 @@ const pusher = new Pusher({
 export async function POST(req) {
   try {
     const body = await req.json();
-    const text = body?.text?.toString?.().trim();
+    const text = body?.text; // Keep original - no trim/conversion
     const user = body?.user ? String(body.user) : "anon";
 
-    if (!text) {
+    if (!text || text.trim() === "") {
       return NextResponse.json({ error: "text required" }, { status: 400 });
     }
 
     const msg = {
       id: Date.now(),
       user,
-      text,
+      text, // Full text stored
       ts: new Date().toISOString(),
     };
 
+    // Save full message to storage
     addMessage(msg);
 
-    await pusher.trigger("workspace-channel", "new-message", msg);
+    // Check message size for Pusher (10KB limit)
+    const msgSize = new Blob([JSON.stringify(msg)]).size;
+    
+    if (msgSize > 9000) {
+      // Message too large for Pusher - send notification only
+      await pusher.trigger("workspace-channel", "large-message-posted", {
+        id: msg.id,
+        user: msg.user,
+        timestamp: msg.ts,
+      });
+    } else {
+      // Normal message - send via Pusher
+      await pusher.trigger("workspace-channel", "new-message", msg);
+    }
 
     return NextResponse.json(msg, { status: 201 });
   } catch (err) {
