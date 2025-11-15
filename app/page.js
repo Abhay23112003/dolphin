@@ -234,13 +234,20 @@ export default function Home() {
 
           {/* Input Area */}
           <div className="border-t border-slate-700/50 bg-slate-900/50 p-6">
-            <div className="flex gap-3">
+            <div className="flex gap-3 items-start">
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
+                onPaste={(e) => {
+                  // Handle large pastes properly
+                  e.preventDefault();
+                  const paste = e.clipboardData.getData('text');
+                  setText(text + paste);
+                }}
                 placeholder="Type your message, paste code, or share text..."
-                className="flex-1 bg-slate-800/80 border border-slate-700/50 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all resize-none"
-                rows="3"
+                className="flex-1 bg-slate-800/80 border border-slate-700/50 rounded-xl px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all resize-y font-mono text-sm overflow-y-auto custom-scrollbar"
+                rows="8"
+                style={{ minHeight: '120px', maxHeight: '400px' }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                     e.preventDefault();
@@ -251,7 +258,7 @@ export default function Home() {
               <button
                 onClick={sendMessage}
                 disabled={!text.trim()}
-                className="self-end px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:from-slate-700 disabled:to-slate-700 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-all duration-200 flex items-center gap-2 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 disabled:shadow-none"
+                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:from-slate-700 disabled:to-slate-700 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-all duration-200 flex items-center gap-2 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 disabled:shadow-none whitespace-nowrap"
               >
                 <Send className="w-4 h-4" />
                 Send
