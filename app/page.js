@@ -288,7 +288,7 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <div className="w-14 h-14 rounded-full flex items-center justify-center shrink-0 overflow-hidden border-2 border-purple-400/50 shadow-lg shadow-purple-500/30">
                 <img 
-                  src="https://i.imgur.com/your-uploaded-image.jpg" 
+                  src="\leo-jimenez-02-hoyeon-jung-p3.jpg" 
                   alt="Profile"
                   className="w-full h-full object-cover"
                   onError={(e) => {
@@ -343,7 +343,7 @@ export default function Home() {
             
             <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 overflow-hidden border-2 border-purple-400/50 shadow-lg shadow-purple-500/30">
               <img 
-                src="https://i.imgur.com/your-uploaded-image.jpg" 
+                src="\leo-jimenez-02-hoyeon-jung-p3.jpg" 
                 alt="Profile"
                 className="w-full h-full object-cover"
                 onError={(e) => {
