@@ -319,6 +319,11 @@ export default function Home() {
 
     setText('');
     removeFile();
+
+    // Force scroll to bottom after sending with longer delay for images
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    }, 600);
   }
 
   function copyToClipboard(text, id) {
@@ -360,7 +365,30 @@ export default function Home() {
   }
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const timeout = setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [messages]);
+
+  // Additional scroll trigger for when images finish loading
+  useEffect(() => {
+    const images = document.querySelectorAll('img');
+    const handleImageLoad = () => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    };
+
+    images.forEach(img => {
+      if (!img.complete) {
+        img.addEventListener('load', handleImageLoad);
+      }
+    });
+
+    return () => {
+      images.forEach(img => {
+        img.removeEventListener('load', handleImageLoad);
+      });
+    };
   }, [messages]);
 
   function retryAuth() {
@@ -958,8 +986,8 @@ export default function Home() {
                             marginTop: '12px',
                             borderRadius: 'var(--radius-md)',
                             overflow: 'hidden',
-                            background: isDark ? 'rgba(38, 40, 40, 0.5)' : 'rgba(168, 85, 247, 0.08)',
-                            border: `1px solid ${isDark ? 'rgba(119, 124, 124, 0.3)' : 'rgba(94, 82, 64, 0.2)'}`
+                            background: isImageFile(msg.file.name) ? 'transparent' : (isDark ? 'rgba(38, 40, 40, 0.5)' : 'rgba(168, 85, 247, 0.08)'),
+                            border: isImageFile(msg.file.name) ? 'none' : `1px solid ${isDark ? 'rgba(119, 124, 124, 0.3)' : 'rgba(94, 82, 64, 0.2)'}`
                           }}>
                             {isImageFile(msg.file.name) ? (
                               <div style={{ position: 'relative' }}>
@@ -970,9 +998,9 @@ export default function Home() {
                                     width: '100%',
                                     maxHeight: '320px',
                                     objectFit: 'cover',
-                                    borderRadius: 'var(--radius-md) var(--radius-md) 0 0'
+                                    borderRadius: 'var(--radius-md)',
+                                    display: 'block'
                                   }}
-                                  loading="lazy"
                                 />
                                 <a
                                   href={msg.file.url}
@@ -989,38 +1017,16 @@ export default function Home() {
                                     borderRadius: 'var(--radius-full)',
                                     display: 'flex',
                                     transition: 'all 0.3s',
-                                    textDecoration: 'none'
+                                    textDecoration: 'none',
+                                    opacity: 0,
+                                    transition: 'opacity 0.3s'
                                   }}
                                   title="Download image"
+                                  onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                                  onMouseLeave={(e) => e.currentTarget.style.opacity = '0'}
                                 >
                                   <Download size={20} color="white" />
                                 </a>
-                                <div style={{
-                                  padding: '8px 12px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'space-between'
-                                }}>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
-                                    <ImageIcon size={16} color={isDark ? 'rgba(167, 169, 169, 0.7)' : 'var(--color-slate-500)'} />
-                                    <span style={{
-                                      fontSize: 'var(--font-size-xs)',
-                                      color: isDark ? 'var(--color-gray-200)' : 'var(--color-slate-900)',
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                      whiteSpace: 'nowrap'
-                                    }} title={msg.file.name}>
-                                      {truncateFilename(msg.file.name, 30)}
-                                    </span>
-                                  </div>
-                                  <span style={{
-                                    fontSize: 'var(--font-size-xs)',
-                                    color: isDark ? 'rgba(167, 169, 169, 0.7)' : 'var(--color-slate-500)',
-                                    marginLeft: '8px'
-                                  }}>
-                                    {(msg.file.size / (1024 * 1024)).toFixed(2)} MB
-                                  </span>
-                                </div>
                               </div>
                             ) : (
                               <div style={{
